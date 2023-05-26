@@ -1,5 +1,5 @@
-function sortMessagesBySubjectAndDate() {
-  var threads = GmailApp.search('your search query', 0, 100); // Modify the search query and result limit as needed
+function sortInboxMessagesBySubjectAndDate() {
+  var threads = GmailApp.getInboxThreads(0, 100); // Modify the result limit as needed
 
   var messages = [];
   for (var i = 0; i < threads.length; i++) {

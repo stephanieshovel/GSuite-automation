@@ -1,0 +1,28 @@
+function colorCodeCalendarEvents() {
+  var calendarId = 'primary';
+ //update the keyword1, keyword2, etc to match the keywords to trigger the color change.
+  var keywordColors = {
+    'keyword1': '#ff0000',  // Red
+    'keyword2': '#00ff00',  // Green
+    'keyword3': '#0000ff',  // Blue
+    'keyword4': '#ffff00',  // Yellow
+    'keyword5': '#ff00ff',  // Magenta
+    'keyword6': '#00ffff',  // Cyan
+  };
+
+  var calendar = CalendarApp.getCalendarById(calendarId);
+  var events = calendar.getEvents(new Date(), new Date(new Date().getTime() + (24 * 60 * 60 * 1000))); // Get events for the next 24 hours
+
+//this loop accesses and edits events one at a time.
+  for (var i = 0; i < events.length; i++) {
+    var event = events[i];
+    var eventTitle = event.getTitle();
+
+    for (var keyword in keywordColors) {
+      if (eventTitle.toLowerCase().includes(keyword.toLowerCase())) {
+        event.setColor(keywordColors[keyword]);
+        break;
+      }
+    }
+  }
+}

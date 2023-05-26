@@ -1,13 +1,12 @@
 function createCalendarEventWithAvailability() {
-
-// update to phrase and adjust time here
+//update the phrase trigger here and time duration
   var triggerPhrase = 'your trigger phrase';
-  var calendarId = 'primary';
-  var zoomLink = 'https://zoom.us/link-to-meeting';  // Replace with your Zoom link template
+  var senderEmail = 'sender@example.com';
+  var zoomLink = 'https://zoom.us/link-to-meeting'; // Replace with your Zoom link template
   var eventTitle = 'Meeting Event';
-  var durationMinutes = 60;  // Event duration: 1 hour
+  var durationMinutes = 30; // Event duration: 1/2 hour
 
-  var threads = GmailApp.search('is:unread');
+  var threads = GmailApp.search('is:unread from:' + senderEmail);
   for (var i = 0; i < threads.length; i++) {
     var messages = threads[i].getMessages();
     for (var j = 0; j < messages.length; j++) {
@@ -15,7 +14,10 @@ function createCalendarEventWithAvailability() {
       var body = message.getPlainBody();
 
       if (body.toLowerCase().includes(triggerPhrase.toLowerCase())) {
-        var startDateTime = findAvailableTimeSlot(durationMinutes);
+        var recipientEmail = message.getTo();
+        var recipientCalendarId = getCalendarId(recipientEmail);
+
+        var startDateTime = findAvailableTimeSlot(recipientCalendarId, durationMinutes);
         if (startDateTime) {
           var endDateTime = new Date(startDateTime.getTime() + durationMinutes * 60 * 1000);
 
@@ -30,7 +32,7 @@ function createCalendarEventWithAvailability() {
             'description': 'Zoom Link: ' + zoomLink,
           };
 
-          Calendar.Events.insert(event, calendarId);
+          Calendar.Events.insert(event, recipientCalendarId);
           message.markRead();
         }
       }
@@ -38,47 +40,14 @@ function createCalendarEventWithAvailability() {
   }
 }
 
-function findAvailableTimeSlot(durationMinutes) {
-  var calendar1Id = 'primary';
-  var calendar2Id = 'your-other-calendar-id';
 
-  var now = new Date();
-  var startDateTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);  // Start searching from tomorrow
-
-  var calendar1Events = Calendar.Events.list(calendar1Id, {
-    timeMin: startDateTime.toISOString(),
-    singleEvents: true,
-    orderBy: 'startTime',
-  }).items;
-
-  var calendar2Events = Calendar.Events.list(calendar2Id, {
-    timeMin: startDateTime.toISOString(),
-    singleEvents: true,
-    orderBy: 'startTime',
-  }).items;
-
-  var busyTimes = [];
-
-  calendar1Events.forEach(function (event) {
-    busyTimes.push({
-      start: new Date(event.start.dateTime),
-      end: new Date(event.end.dateTime),
-    });
-  });
-
-  calendar2Events.forEach(function (event) {
-    busyTimes.push({
-      start: new Date(event.start.dateTime),
-      end: new Date(event.end.dateTime),
-    });
-  });
-
-  var busyTimesSorted = busyTimes.sort(function (a, b) {
-    return a.start - b.start;
-  });
-
-  var availableTimeSlot = null;
-
-  for (var i = 1; i < busyTimesSorted.length; i++) {
-    var previousEnd = busyTimesSorted[i - 1].end;
-    var currentStart
+function getCalendarId(email) {
+  var calendars = Calendar.CalendarList.list().items;
+  for (var i = 0; i < calendars.length; i++) {
+    var calendar = calendars[i];
+    if (calendar.accessRole === 'owner' && calendar.primaryEmail === email) {
+      return calendar.id;
+    }
+  }
+  throw new Error('Calendar ID not found for email: ' + email);
+}

@@ -1,0 +1,28 @@
+function sortMessagesBySubjectAndDate() {
+  var threads = GmailApp.search('your search query', 0, 100); // Modify the search query and result limit as needed
+
+  var messages = [];
+  for (var i = 0; i < threads.length; i++) {
+    messages = messages.concat(threads[i].getMessages());
+  }
+
+  messages.sort(function(a, b) {
+    var subjectA = a.getSubject().toLowerCase();
+    var subjectB = b.getSubject().toLowerCase();
+
+    if (subjectA === subjectB) {
+      var dateA = a.getDate();
+      var dateB = b.getDate();
+      return dateA - dateB;
+    } else {
+      return subjectA.localeCompare(subjectB);
+    }
+  });
+
+  // Process the sorted messages
+  for (var j = 0; j < messages.length; j++) {
+    var message = messages[j];
+    // Perform actions on the sorted messages as needed
+    Logger.log(message.getSubject());
+  }
+}

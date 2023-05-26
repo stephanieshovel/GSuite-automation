@@ -1,0 +1,16 @@
+function autoRespondToEmails() {
+//edit for keyword to trigger autoreply
+  var keyword = 'your keyword';
+//edit below for unique response
+  var responseText = 'Thank you for your email. This is an automated response.';
+
+  var threads = GmailApp.search('in:inbox "' + keyword + '"');
+  for (var i = 0; i < threads.length; i++) {
+    var messages = threads[i].getMessages();
+    for (var j = 0; j < messages.length; j++) {
+      messages[j].reply(responseText);
+    }
+  }
+}
+
+//to configure the trigger and event timing of response, use the edit menu to set up

@@ -1,0 +1,29 @@
+function setupSheetEditNotification() {
+//update with your google sheet name and email
+  var sheetId = 'YOUR_SHEET_ID';
+  var recipients = 'YOUR_EMAIL_ADDRESS';
+
+  var ss = SpreadsheetApp.openById(sheetId);
+  ScriptApp.newTrigger('sendSheetEditNotification')
+    .forSpreadsheet(ss)
+    .onEdit()
+    .create();
+}
+
+function sendSheetEditNotification(e) {
+  var sheet = e.source.getActiveSheet();
+  var range = e.range;
+  var editedValue = e.value;
+  var editedRow = range.getRow();
+  var editedColumn = range.getColumn();
+  var editorEmail = e.user.getEmail();
+
+  var message = "Edit in Google Sheet:\n" +
+    "Sheet: " + sheet.getName() + "\n" +
+    "Range: " + range.getA1Notation() + "\n" +
+    "Edited Value: " + editedValue + "\n" +
+    "Edited by: " + editorEmail;
+
+  var subject = "Google Sheet Edit Notification";
+  MailApp.sendEmail(recipients, subject, message);
+}

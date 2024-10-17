@@ -1,0 +1,43 @@
+//naming my function stating i want to replace all instances of CSH from this sheet//
+function replaceCSH() {
+  // Get the active spreadsheet and sheet by name//
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('NAMEOFYOURSHEETPAGE');
+
+  // Check if the sheet exists, need page name//
+  if (!sheet) {
+    throw new Error("Sheet 'NAMEOFYOURSHEETPAGE' not found.");
+  }
+
+  // Get the range of data in the sheet, in this example, my columns were fixed and the data i wanted to focus on would always be b and q//
+  var rangeB = sheet.getRange(1, 2, sheet.getLastRow(), 1); // Column B
+  var rangeQ = sheet.getRange(1, 17, sheet.getLastRow(), 1); // Column Q
+
+  // Get the values in columns B and Q as arrays
+  var dataB = rangeB.getValues();
+  var dataQ = rangeQ.getValues();
+
+  // Replace 'CSH_' in Column B
+  for (var i = 0; i < dataB.length; i++) {
+    if (dataB[i][0].toString().indexOf('CSH_') > -1) {
+      dataB[i][0] = dataB[i][0].replace('CSH_', ''); // Replace 'CSH_' with empty string (backspace)
+    }
+  }
+  rangeB.setValues(dataB); // Set the updated values back to the sheet
+
+  // Replace 'CSH_D_' in Column Q
+  for (var j = 0; j < dataQ.length; j++) {
+    if (dataQ[j][0].toString().indexOf('CSH_D_') > -1) {
+      dataQ[j][0] = dataQ[j][0].replace('CSH_D_', ''); // Replace 'CSH_D_' with empty string (backspace)
+    }
+  }
+  rangeQ.setValues(dataQ); // Set the updated values back to the sheet
+}
+
+// Installable trigger to run the script on every change in the sheet
+function createTrigger() {
+  var ss = SpreadsheetApp.getActive();
+  ScriptApp.newTrigger('replaceCSH')
+    .forSpreadsheet(ss)
+    .onChange() // Trigger when the sheet is modified (save, refresh, etc.)
+    .create();
+}

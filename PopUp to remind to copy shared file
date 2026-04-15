@@ -1,0 +1,7 @@
+function onOpen() {
+  var ui = DocumentApp.getUi();
+  ui.alert(
+     'Important!',
+     'This is a shared document, please make a copy for yourself before editing.',
+      ui.ButtonSet.OK);
+}

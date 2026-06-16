@@ -1,0 +1,56 @@
+function generateMergedDocument() {
+  const SPREADSHEET_ID = 'INSERT SPREADHSEET ID'; // Your Spreadsheet ID
+  const DOC_TEMPLATE_ID = 'INSERT DOC ID'; // Your Docs Template ID
+
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const controlPanelSheet = spreadsheet.getSheetByName('Control_Panel');
+
+  // Get selected values from dropdowns
+  const jobLevelValue = controlPanelSheet.getRange('B3').getValue();
+  const jobFamilyValue = controlPanelSheet.getRange('B4').getValue();
+
+  if (!jobLevelValue || !jobFamilyValue) {
+    SpreadsheetApp.getUi().alert('Please select both Job Level and Job Family from the dropdowns.');
+    return;
+  }
+
+  // Find the correct data sheet based on selected values
+    const dataSheet = spreadsheet.getSheetByName(jobFamilyValue); 
+  if (!dataSheet) {
+    SpreadsheetApp.getUi().alert(`Data sheet for Job Family "${jobFamilyValue}" not found.`);
+    return;
+  }
+
+  const dataRange = dataSheet.getDataRange();
+  const data = dataRange.getValues();
+  const headers = data[0];
+
+  // Find the row that matches both selections
+  const selectedRowData = data.find(row => {
+    const jobLevelIndex = headers.indexOf('Job_Level');
+    const jobFamilyIndex = headers.indexOf('Job_Family');
+    return row[jobLevelIndex] === jobLevelValue && row[jobFamilyIndex] === jobFamilyValue;
+  });
+
+  if (!selectedRowData) {
+    SpreadsheetApp.getUi().alert(`No matching data found for Job Level "${jobLevelValue}" and Job Family "${jobFamilyValue}".`);
+    return;
+  }
+
+  const templateFile = DriveApp.getFileById(DOC_TEMPLATE_ID);
+  const newDocumentName = `${jobFamilyValue} - ${jobLevelValue} - Merged Document`;
+  const newDocument = templateFile.makeCopy(newDocumentName);
+  const newDocId = newDocument.getId();
+  const doc = DocumentApp.openById(newDocId);
+  const body = doc.getBody();
+
+  // Replace placeholders with data from the row
+  headers.forEach((header, index) => {
+    const placeholder = `{${header}}`;
+    const value = selectedRowData[index];
+    body.replaceText(placeholder, value || '');
+  });
+
+  doc.saveAndClose();
+  SpreadsheetApp.getUi().alert(`New document created: ${newDocument.getUrl()}`);
+}
